@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.filesystem.dao.mapper.OperationMapper">
+    <resultMap id="BaseResultMap" type="com.example.filesystem.model.po.Operation">
+        <id column="id" property="id" jdbcType="VARCHAR"/>
+        <result column="user_id" property="userId" jdbcType="VARCHAR"/>
+        <result column="file_name" property="fileName" jdbcType="VARCHAR"/>
+        <result column="file_size" property="fileSize" jdbcType="VARCHAR"/>
+        <result column="reason" property="reason" jdbcType="VARCHAR"/>
+        <result column="approval_name" property="approvalName" jdbcType="VARCHAR"/>
+        <result column="approval_time" property="approvalTime" jdbcType="TIMESTAMP"/>
+        <result column="approval_result" property="approvalResult" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="selectAllOperation" resultMap="BaseResultMap">
+        SELECT *
+        FROM operation
+        order by create_time asc
+    </select>
+
+    <select id="selectReasonDTO" parameterType="java.lang.String"
+            resultType="com.example.filesystem.model.dto.ReasonDTO">
+        SELECT
+        t1.id AS id,
+        t2.name AS name,
+        t1.file_name AS fileName,
+        t1.file_size AS fileSize,
+        t1.reason AS reason,
+        t1.approval_name AS approvalName,
+        t1.approval_result AS approvalResult,
+        t1.approval_time AS approvalTime
+        FROM
+        operation t1
+        LEFT JOIN user t2 on t1.user_id = t2.id
+
+        <where>
+            <if test="content != null and content != ''">
+                AND t1.approval_name like CONCAT('%',#{content},'%')
+            </if>
+            <if test="null != timeStart">
+                <if test="null != timeEnd">
+                    AND t1.approval_time between #{timeStart} and #{timeEnd}
+                </if>
+            </if>
+        </where>
+        order by t1.approval_time asc
+    </select>
+
+    <select id="getAllOperation" resultType="com.example.filesystem.model.dto.ReasonDTO">
+        SELECT
+            t1.id,
+            t2.name            as name,
+            t1.file_name       as fileName,
+            t1.file_size       as fileSize,
+            t1.reason,
+            t1.approval_name   as approvalName,
+            t1.approval_result as approvalResult,
+            t1.approval_time   as approvalTime
+        FROM
+            operation t1,
+            user t2
+        <where>
+            <if test="null != timeStart">
+                <if test="null != timeEnd">
+                    AND t1.approval_time between #{timeStart} and #{timeEnd}
+                </if>
+            </if>
+            AND  t2.id = t1.user_id
+        </where>
+        order by t1.approval_time asc
+    </select>
+
+    <delete id="deleteOperation" parameterType="java.lang.String">
+        delete
+        from operation
+        where id = #{id}
+    </delete>
+
+    <insert id="addOperation" parameterType="com.example.filesystem.model.po.Operation">
+        insert into operation
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null and id != ''">
+                id,
+            </if>
+            <if test="userId != null and userId != ''">
+                user_id,
+            </if>
+            <if test="fileName != null and fileName != ''">
+                file_name,
+            </if>
+            <if test="fileSize != null and fileSize != ''">
+                file_size,
+            </if>
+            <if test="reason != null and reason != ''">
+                reason,
+            </if>
+            <if test="approvalName != null and approvalName != ''">
+                approval_name,
+            </if>
+            <if test="approvalResult != null and approvalName != ''">
+                approval_result,
+            </if>
+            <if test="approvalTime != null ">
+                approval_time,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null and id != ''">
+                #{id},
+            </if>
+            <if test="userId != null and userId != ''">
+                #{userId},
+            </if>
+            <if test="fileName != null and fileName != ''">
+                #{fileName},
+            </if>
+            <if test="fileSize != null and fileSize != ''">
+                #{fileSize},
+            </if>
+            <if test="reason != null and reason != ''">
+                #{reason},
+            </if>
+            <if test="approvalName != null and approvalName != ''">
+                #{approvalName},
+            </if>
+            <if test="approvalResult != null and approvalResult != ''">
+                #{approvalResult},
+            </if>
+            <if test="approvalTime != null">
+                #{approvalTime},
+            </if>
+            <if test="createTime != null">
+                #{createTime},
+            </if>
+        </trim>
+    </insert>
+</mapper>

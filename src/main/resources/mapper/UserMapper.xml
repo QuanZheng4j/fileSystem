@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.filesystem.dao.mapper.UserMapper">
+    <resultMap id="BaseResultMap" type="com.example.filesystem.model.po.User">
+        <id column="id" property="id" jdbcType="VARCHAR"/>
+        <result column="role_id" property="roleId" jdbcType="INTEGER"/>
+        <result column="department_id" property="departmentId" jdbcType="INTEGER"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="user_name" property="userName" jdbcType="VARCHAR"/>
+        <result column="password" property="passWord" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="selectAllUser" resultMap="BaseResultMap">
+        SELECT *
+        FROM user
+        order by create_time asc
+    </select>
+
+    <select id="selectUserDTO" parameterType="java.lang.String" resultType="com.example.filesystem.model.dto.Users">
+        SELECT
+            t1.id AS id,
+            t2.department_type AS department,
+            t3.role_type As role,
+            t1.name AS `name`,
+            t1.user_name AS userName,
+            t1.`password` AS password
+        FROM
+        USER t1
+        LEFT JOIN department t2 ON t1.department_id = t2.id
+        LEFT JOIN role t3 ON t1.role_id = t3.id
+        WHERE
+        t1.role_id != 1
+          <if test="content != null and content != ''">
+              AND t1.name like CONCAT('%',#{content},'%')
+          </if>
+    </select>
+
+    <select id="selectSuccessUser" parameterType="java.lang.String"
+            resultType="com.example.filesystem.model.dto.SuccessUser">
+        SELECT
+            t1.id              AS id,
+            t1.name            AS name,
+            t2.department_type AS departmentType
+        FROM
+            user t1,
+            department t2
+        WHERE
+            t1.department_id = t2.id
+          AND t1.user_name = #{userName}
+          AND t1.`password` = #{password}
+    </select>
+
+    <select id="selectAllApproval" resultType="com.example.filesystem.model.dto.Approval">
+        select id,name,user_name as userName
+        from user
+        where role_id = 2
+        order by create_time asc
+    </select>
+
+    <insert id="insertNewUser" parameterType="com.example.filesystem.model.po.User">
+        insert into user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null and id != ''">
+                id,
+            </if>
+            <if test="roleId != null and roleId != ''">
+                role_id,
+            </if>
+            <if test="departmentId != null and departmentId != ''">
+                department_id,
+            </if>
+            <if test="name != null and name != ''">
+                name,
+            </if>
+            <if test="userName != null and userName != ''">
+                user_name,
+            </if>
+            <if test="passWord != null and passWord != ''">
+                password,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null and id != ''">
+                #{id},
+            </if>
+            <if test="roleId != null and roleId != ''">
+                #{roleId},
+            </if>
+            <if test="departmentId != null and departmentId != ''">
+                #{departmentId},
+            </if>
+            <if test="name != null and name != ''">
+                #{name},
+            </if>
+            <if test="userName != null and userName != ''">
+                #{userName},
+            </if>
+            <if test="passWord != null and passWord != ''">
+                #{passWord},
+            </if>
+            <if test="createTime != null">
+                #{createTime},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateUser" parameterType="com.example.filesystem.model.po.User">
+        update user
+        <set>
+            <if test="null != roleId">
+                role_id = #{roleId},
+            </if>
+            <if test="departmentId != null">
+                department_id = #{departmentId},
+            </if>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="passWord != null">
+                password = #{passWord},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <update id="updateUserPassWord" parameterType="com.example.filesystem.model.po.User">
+        update user
+        <set>
+            <if test="passWord != null">
+                password = #{passWord},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteUser" parameterType="java.lang.String">
+        delete
+        from user
+        where id = #{id}
+    </delete>
+</mapper>
